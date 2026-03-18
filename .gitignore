@@ -1,0 +1,26 @@
+# Archivos auxiliares de LaTeX (en ambas ubicaciones posibles)
+*.aux
+*.log
+*.lof
+*.lot
+*.toc
+*.out
+*.synctex.gz
+latex/main.pdf
+
+# Archivos compilados temporales de Pandoc
+latex/capitulos/
+
+# Archivos de sesión R
+.Rhistory
+.RData
+.Rproj.user/
+*.Rproj
+
+# Carpeta interna de Claude Code
+.claude/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+*~

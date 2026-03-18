@@ -1,0 +1,101 @@
+"fecha","tipo_carga","num_contenedores","tiempo_carga_horas","eficiencia_porcentaje"
+2023-01-06,"Granel Solido",14,4.3,96.3
+2023-01-11,"Contenedor",86,39.5,76.7
+2023-01-16,"Contenedor",58,25.8,69.8
+2023-01-26,"Granel Solido",11,4.9,80.5
+2023-01-29,"Carga Refrigerada",36,17.1,56.4
+2023-01-29,"Contenedor",98,46.3,75.1
+2023-01-31,"Granel Liquido",10,6.5,88.7
+2023-02-01,"Granel Solido",21,8.7,70
+2023-02-04,"Contenedor",69,30.3,88.7
+2023-02-05,"Contenedor",86,37.4,74.2
+2023-02-06,"Granel Solido",34,10.1,84
+2023-02-14,"Contenedor",64,29.1,65.9
+2023-02-19,"Contenedor",55,24.5,89
+2023-03-03,"Granel Liquido",18,1.5,71.4
+2023-03-07,"Carga General",39,15.1,70.1
+2023-03-09,"Contenedor",78,31.9,81.5
+2023-03-09,"Carga General",42,16.7,64.8
+2023-03-14,"Granel Liquido",9,5.4,75.3
+2023-03-22,"Contenedor",65,34,80.6
+2023-03-25,"Granel Solido",34,14.2,75.3
+2023-03-28,"Granel Solido",27,4.9,80.8
+2023-04-04,"Contenedor",103,53,87.7
+2023-04-15,"Carga General",56,19.3,55.8
+2023-04-16,"Granel Liquido",16,3.8,86
+2023-04-18,"Granel Solido",27,4.2,65.5
+2023-04-19,"Carga General",48,18.8,79.1
+2023-04-23,"Contenedor",57,31.7,73.6
+2023-04-25,"Granel Solido",20,6.6,77.7
+2023-04-28,"Granel Solido",39,15.3,79.1
+2023-05-02,"Contenedor",116,51.2,70
+2023-05-03,"Granel Liquido",11,2.9,68.7
+2023-05-11,"Granel Solido",5,1.5,67.2
+2023-05-11,"Contenedor",93,42.4,82.2
+2023-05-15,"Carga Refrigerada",40,19.4,73.5
+2023-05-20,"Contenedor",67,32.1,81.8
+2023-05-27,"Granel Liquido",16,1.5,75.7
+2023-05-29,"Contenedor",128,56.8,73.5
+2023-06-02,"Carga Refrigerada",45,21.3,73.6
+2023-06-02,"Granel Liquido",15,4.6,80
+2023-06-11,"Granel Liquido",23,1.5,78.4
+2023-06-21,"Granel Liquido",13,1.5,87.2
+2023-06-22,"Contenedor",69,33.2,70.6
+2023-07-05,"Contenedor",88,38,79.4
+2023-07-07,"Contenedor",42,21.5,78.9
+2023-07-07,"Contenedor",116,54.1,82.7
+2023-07-08,"Contenedor",140,66.2,72.3
+2023-07-09,"Contenedor",76,37.3,92
+2023-07-12,"Contenedor",108,48,74.6
+2023-07-13,"Granel Solido",16,1.5,71.7
+2023-07-22,"Granel Solido",22,3.7,73.8
+2023-07-22,"Carga General",40,17.2,70.4
+2023-07-24,"Carga General",49,18.7,69
+2023-07-24,"Carga Refrigerada",64,29.8,70.3
+2023-07-26,"Contenedor",89,34.5,74.3
+2023-07-27,"Granel Liquido",19,1.5,99
+2023-07-28,"Contenedor",76,33.8,71.3
+2023-07-30,"Carga General",43,18.7,71.4
+2023-07-31,"Contenedor",91,41.8,76
+2023-08-01,"Granel Solido",25,12.3,77.1
+2023-08-04,"Granel Solido",15,5.3,75.2
+2023-08-05,"Contenedor",76,36.3,90.2
+2023-08-12,"Carga General",44,15.3,73.1
+2023-08-14,"Granel Solido",28,5.7,62.1
+2023-08-23,"Carga General",31,12,76.6
+2023-08-26,"Granel Solido",15,8.3,73.9
+2023-08-28,"Granel Solido",24,16.1,84.6
+2023-09-09,"Carga General",28,8.2,65.5
+2023-09-10,"Granel Solido",12,6.4,78.4
+2023-09-12,"Contenedor",99,50.4,84.4
+2023-09-16,"Carga General",48,16.8,60.4
+2023-09-18,"Contenedor",117,53.8,84
+2023-09-27,"Contenedor",100,47.5,82.2
+2023-09-29,"Contenedor",117,57.2,70.2
+2023-09-29,"Granel Solido",24,2.9,68.4
+2023-10-03,"Carga General",63,19.5,54.8
+2023-10-03,"Granel Solido",5,2,72.6
+2023-10-03,"Contenedor",85,40.7,89.8
+2023-10-03,"Carga General",41,13.4,73.5
+2023-10-08,"Granel Solido",14,3.1,71.2
+2023-10-10,"Carga Refrigerada",48,27.7,60.3
+2023-10-11,"Contenedor",111,55.5,85.4
+2023-10-17,"Granel Solido",12,5.2,55.3
+2023-10-31,"Contenedor",66,29.3,77.1
+2023-11-01,"Contenedor",89,42.6,77.1
+2023-11-01,"Carga Refrigerada",58,29.6,71.3
+2023-11-06,"Contenedor",96,47.8,79.8
+2023-11-09,"Granel Liquido",12,3.5,93.6
+2023-11-09,"Carga Refrigerada",53,21.8,71.8
+2023-11-11,"Contenedor",71,26.3,78.8
+2023-11-18,"Contenedor",16,4.2,81.5
+2023-11-19,"Carga General",43,26.6,74.2
+2023-11-25,"Carga Refrigerada",51,24,69.2
+2023-11-30,"Contenedor",102,45.8,64.7
+2023-12-02,"Contenedor",98,44.2,71.6
+2023-12-06,"Contenedor",70,35.1,65.5
+2023-12-12,"Granel Solido",29,6.5,79.9
+2023-12-20,"Contenedor",69,27.3,64.3
+2023-12-27,"Contenedor",122,55.6,90.6
+2023-12-27,"Granel Solido",21,7.7,74.2
+2023-12-29,"Carga General",34,10.5,66.5

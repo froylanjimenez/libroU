@@ -1,0 +1,193 @@
+% =============================================================================
+% PREÁMBULO: Estadística con R — Fundamentos y Aplicaciones
+% =============================================================================
+
+% --- Codificación y lenguaje (LuaLaTeX maneja UTF-8 nativamente) -------------
+\usepackage{fontspec}         % Gestión de fuentes OpenType con LuaLaTeX
+\defaultfontfeatures{Ligatures=TeX}
+
+% Babel v3.x (TeX Live 2025): carga idioma con \babelprovide
+\usepackage{babel}
+\babelprovide[main, import]{spanish}
+
+% --- Tipografía --------------------------------------------------------------
+\usepackage{lmodern}          % Latin Modern
+\usepackage{microtype}        % Optimización tipográfica (kerning, protrusion)
+
+% --- Matemáticas -------------------------------------------------------------
+\usepackage{amsmath}          % Entornos equation, align, gather, etc.
+\usepackage{amssymb}          % Símbolos matemáticos adicionales
+\usepackage{amsthm}           % Entornos theorem, proof, definition
+\usepackage{bm}               % Negritas en modo matemático (\bm)
+\usepackage{mathtools}        % Extensiones de amsmath
+
+% --- Definiciones de entornos matemáticos -----------------------------------
+\theoremstyle{definition}
+\newtheorem{definicion}{Definición}[chapter]
+\newtheorem{ejemplo}{Ejemplo}[chapter]
+\newtheorem{propiedad}{Propiedad}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{teorema}{Teorema}[chapter]
+\newtheorem{corolario}{Corolario}[chapter]
+\newtheorem{lema}{Lema}[chapter]
+
+\theoremstyle{remark}
+\newtheorem{nota}{Nota}[chapter]
+\newtheorem{observacion}{Observación}[chapter]
+
+% --- Gráficos y figuras ------------------------------------------------------
+\usepackage{graphicx}         % Inclusión de imágenes
+\usepackage{float}            % Control de posición [H]
+\usepackage{subcaption}       % Subfiguras
+\graphicspath{{../output/}{./figuras/}}
+
+% --- Tablas ------------------------------------------------------------------
+\usepackage{booktabs}         % Líneas profesionales (\toprule, \midrule, \bottomrule)
+\usepackage{array}            % Extensiones de columnas
+\usepackage{longtable}        % Tablas que cruzan páginas (generadas por Pandoc)
+\usepackage{multirow}         % Celdas que abarcan filas
+
+% --- Código fuente R ---------------------------------------------------------
+\usepackage{listings}
+\usepackage{xcolor}
+
+% Colores para el resaltado de sintaxis
+\definecolor{codebg}{RGB}{248, 248, 248}
+\definecolor{codeframe}{RGB}{200, 200, 200}
+\definecolor{codecomment}{RGB}{106, 153, 85}
+\definecolor{codekeyword}{RGB}{86, 156, 214}
+\definecolor{codestring}{RGB}{206, 145, 120}
+\definecolor{codenumber}{RGB}{181, 206, 168}
+\definecolor{rblue}{RGB}{22, 92, 170}
+
+% Estilo de código R
+\lstdefinestyle{estilo_r}{
+  language        = R,
+  basicstyle      = \ttfamily\scriptsize,
+  backgroundcolor = \color{codebg},
+  frame           = single,
+  framerule       = 0.5pt,
+  rulecolor       = \color{codeframe},
+  commentstyle    = \color{codecomment}\itshape,
+  keywordstyle    = \color{codekeyword}\bfseries,
+  stringstyle     = \color{codestring},
+  numberstyle     = \tiny\color{codenumber},
+  numbers         = left,
+  numbersep       = 8pt,
+  stepnumber      = 1,
+  tabsize         = 2,
+  showstringspaces= false,
+  breaklines      = true,
+  breakatwhitespace= true,
+  captionpos      = b,
+  morekeywords    = {TRUE, FALSE, NULL, NA, NaN, Inf,
+                     library, require, install.packages,
+                     function, return, if, else, for, while, repeat,
+                     in, next, break,
+                     data.frame, list, vector, matrix, array, factor,
+                     read.csv, write.csv, source, setwd, getwd,
+                     ggplot, aes, geom_point, geom_line, geom_bar,
+                     geom_histogram, geom_boxplot, geom_smooth,
+                     labs, theme_minimal, ggsave, scale_color_viridis_d,
+                     lm, glm, aov, summary, coef, residuals, fitted,
+                     t.test, wilcox.test, shapiro.test, cor, var.test,
+                     mean, median, sd, var, IQR, quantile, range,
+                     table, prop.table, tapply, sapply, lapply, apply,
+                     filter, select, mutate, group_by, summarise, arrange,
+                     pivot_wider, pivot_longer, left_join, inner_join,
+                     set.seed, runif, rnorm, sample, rep, seq},
+  literate        =
+    {á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'{\i}}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+    {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+    {ñ}{{\~n}}1 {Ñ}{{\~N}}1 {ü}{{\"u}}1 {Ü}{{\"U}}1
+}
+
+\lstset{style=estilo_r}
+
+% Entorno para código inline
+\newcommand{\rcode}[1]{\texttt{\small\color{rblue}#1}}
+
+% --- Hiperenlaces y metadatos PDF -------------------------------------------
+\usepackage{hyperref}
+\hypersetup{
+  pdftitle    = {Estadística con R: Fundamentos y Aplicaciones},
+  pdfauthor   = {Proyecto Libro Caribe Colombiano},
+  pdfsubject  = {Estadística, R, Análisis de Datos},
+  pdfkeywords = {estadística descriptiva, inferencia, regresión, R, tidyverse,
+                 Caribe colombiano, Sierra Nevada, Cesar, Barranquilla},
+  colorlinks  = true,
+  linkcolor   = rblue,
+  urlcolor    = rblue,
+  citecolor   = rblue,
+  bookmarks   = true,
+  bookmarksnumbered = true
+}
+
+% --- Diseño de página --------------------------------------------------------
+\usepackage{geometry}
+\geometry{
+  letterpaper,                 % Formato carta (21.59 × 27.94 cm)
+  top        = 2.5cm,
+  bottom     = 2.5cm,
+  left       = 3.0cm,          % Margen izquierdo / interior (encuadernación)
+  right      = 2.5cm,          % Margen derecho / exterior
+  headheight = 14pt
+}
+
+% --- Encabezados y pies de página -------------------------------------------
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[LE]{\small\thepage \quad \textit{Estadística con R}}
+\fancyhead[RO]{\small\textit{\nouppercase{\rightmark}} \quad \thepage}
+\fancyfoot[C]{}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% --- Espaciado y párrafos ----------------------------------------------------
+\usepackage{setspace}
+\setstretch{1.15}              % Interlineado compacto (1.15x, vs 1.5x anterior)
+\setlength{\parskip}{4pt}
+\setlength{\parindent}{0pt}   % Sin sangría de primera línea (estilo moderno)
+
+% --- Cajas de texto (notas, advertencias) ------------------------------------
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{notabox}[1][]{
+  enhanced, breakable,
+  colback  = blue!5!white,
+  colframe = rblue,
+  title    = {#1},
+  fonttitle= \bfseries\small,
+  left=6pt, right=6pt, top=4pt, bottom=4pt
+}
+
+\newtcolorbox{codigobox}[1][]{
+  enhanced, breakable,
+  colback  = codebg,
+  colframe = codeframe,
+  title    = {#1},
+  fonttitle= \ttfamily\small\color{rblue},
+  left=4pt, right=4pt, top=2pt, bottom=2pt
+}
+
+% --- Referencias bibliográficas ----------------------------------------------
+\usepackage[authoryear, round]{natbib}
+\bibliographystyle{apalike}
+
+% --- Compatibilidad con Pandoc -----------------------------------------------
+% \tightlist: listas compactas generadas por Pandoc
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{2pt}\setlength{\parskip}{0pt}}
+% \passthrough: código inline (texttt es seguro dentro de tablas)
+\providecommand{\passthrough}[1]{\texttt{#1}}
+
+% --- Comandos personalizados -------------------------------------------------
+\newcommand{\E}[1]{\mathbb{E}\left[#1\right]}          % Esperanza
+\newcommand{\Var}[1]{\mathrm{Var}\left(#1\right)}      % Varianza
+\newcommand{\Cov}[2]{\mathrm{Cov}\left(#1,#2\right)}   % Covarianza
+\newcommand{\N}[2]{\mathcal{N}\left(#2,#2\right)}      % Normal
+\newcommand{\iid}{\overset{\text{iid}}{\sim}}           % iid
+\newcommand{\pvalue}{p\text{-valor}}                    % p-valor
+\newcommand{\dataset}[1]{\texttt{#1}}                   % Nombre de dataset

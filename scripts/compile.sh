@@ -61,6 +61,8 @@ convert_md_to_tex() {
     ["cap02_estadistica_descriptiva.md"]="cap02"
     ["cap03_inferencia_estadistica.md"]="cap03"
     ["cap04_regresion_modelos.md"]="cap04"
+    ["apendice_bibliografia.md"]="apendice_bibliografia"
+    ["apendice_glosario.md"]="apendice_glosario"
   )
 
   for md_file in "${!CAPITULOS[@]}"; do
@@ -182,6 +184,16 @@ generate_datasets() {
   fi
 }
 
+# --- Función para generar figuras R ------------------------------------------
+generate_figures() {
+  if command -v Rscript &>/dev/null; then
+    log_step "Generando figuras (R)"
+    Rscript "${SCRIPTS_DIR}/generar_figuras.R"
+  else
+    log_warn "Rscript no encontrado. Figuras no regeneradas."
+  fi
+}
+
 # =============================================================================
 # PUNTO DE ENTRADA PRINCIPAL
 # =============================================================================
@@ -215,6 +227,7 @@ main() {
     full|--full|"")
       check_deps
       generate_datasets
+      generate_figures
       convert_md_to_tex
       compile_pdf 2       # 2 pasadas para TOC, referencias cruzadas, índices
       clean_aux

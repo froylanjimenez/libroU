@@ -4,11 +4,75 @@
 
 ---
 
+## Tabla de Contenidos
+
+1. [Del dato a la conclusión](#del-dato-a-la-conclusión)
+2. [Distribuciones muestrales y TCL](#distribuciones-muestrales)
+3. [Estimación puntual](#estimación-puntual)
+4. [Intervalos de confianza](#intervalos-de-confianza)
+5. [Pruebas de hipótesis](#pruebas-de-hipótesis)
+6. [Pruebas paramétricas](#pruebas-paramétricas)
+7. [Pruebas no paramétricas](#pruebas-no-paramétricas)
+8. [Bondad de ajuste y normalidad](#bondad-de-ajuste-y-normalidad)
+9. [Tamaño de muestra y potencia](#tamaño-de-muestra-y-potencia)
+10. [Ejercicios prácticos](#ejercicios-prácticos)
+
+---
+
+**Objetivos de aprendizaje**
+
+Al finalizar este capítulo, el estudiante será capaz de:
+
+- Explicar el Teorema Central del Límite y verificarlo mediante simulación en R.
+- Construir e interpretar intervalos de confianza para medias y proporciones.
+- Plantear, ejecutar e interpretar pruebas de hipótesis paramétricas (t de Student, ANOVA) y no paramétricas (Wilcoxon, Kruskal-Wallis).
+- Verificar supuestos de normalidad con pruebas de Shapiro-Wilk y gráficos Q-Q.
+- Calcular el tamaño de muestra necesario para una potencia estadística especificada.
+
+---
+
+## Sección 0 — Preparación del entorno
+
+Cargamos los paquetes y datasets **una sola vez** al inicio del capítulo. El código de cada sección asume que estos objetos están disponibles en la sesión de R.
+
+```r
+# ============================================================
+# CAPÍTULO 3 — Preparación del entorno
+# Ejecutar este bloque UNA sola vez al inicio de la sesión
+# ============================================================
+
+library(tidyverse)   # dplyr, ggplot2, readr, etc.
+
+# Cargar los tres datasets del proyecto
+biodiversidad <- read_csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
+palma         <- read_csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
+logistica     <- read_csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
+
+cat("Datasets cargados:\n")
+cat(" biodiversidad:", nrow(biodiversidad), "obs\n")
+cat(" palma        :", nrow(palma), "obs\n")
+cat(" logistica    :", nrow(logistica), "obs\n")
+```
+
+**Resultado:**
+```
+Datasets cargados:
+ biodiversidad: 200 obs
+ palma        : 150 obs
+ logistica    : 100 obs
+```
+
+A partir de aquí, todos los bloques de código del capítulo usan directamente los objetos `biodiversidad`, `palma` y `logistica` sin recargarlos.
+
+---
+
 ## Introducción
 
 Hasta ahora hemos aprendido a describir datos: calcular medidas de tendencia central, dispersión, construir gráficos. Sin embargo, la pregunta más importante en ciencia aplicada no es "¿cómo son estos datos?" sino "¿qué nos dicen estos datos sobre el mundo real?". Ahí entra la **inferencia estadística**.
 
 En el Caribe Colombiano, un investigador del IDEAM no puede medir la temperatura de cada rincón de la Sierra Nevada de Santa Marta. Un agrónomo del Cesar no puede pesar la producción de cada árbol de palma africana en el departamento. Un operador del Puerto de Barranquilla no puede registrar cada contenedor que jamás haya pasado. Todos ellos trabajan con **muestras** y necesitan **inferir** conclusiones sobre poblaciones completas.
+
+Pensemos en un caso concreto: un investigador del IDEAM quiere saber si la temperatura media actual en la vertiente norte de la Sierra Nevada de Santa Marta ha cambiado respecto al valor histórico de 18°C registrado en la década de 1990. No puede instalar sensores en todos los puntos posibles ni viajar a cada cota altitudinal. Con una muestra bien diseñada de 200 sitios de monitoreo —como la que tenemos en `biodiversidad_sierra.csv`— puede responder esa pregunta con rigor estadístico. Ese es precisamente el poder de la inferencia.
 
 Este capítulo cubre las herramientas fundamentales de la inferencia estadística clásica (frecuentista): distribuciones muestrales, estimación por intervalos de confianza, pruebas de hipótesis paramétricas y no paramétricas, y análisis de tamaño de muestra.
 
@@ -18,21 +82,7 @@ Este capítulo cubre las herramientas fundamentales de la inferencia estadístic
 
 ### Conceptos fundamentales
 
-La inferencia estadística descansa sobre una distinción conceptual esencial:
-
-| Concepto | Definición | Ejemplo |
-|---|---|---|
-| **Población** | Conjunto completo de elementos bajo estudio | Todos los puntos de muestreo posibles en la Sierra Nevada |
-| **Muestra** | Subconjunto representativo de la población | Las 200 observaciones en `biodiversidad_sierra.csv` |
-| **Parámetro** | Característica numérica de la **población** (fijo, usualmente desconocido) | La temperatura promedio real en toda la Sierra |
-| **Estadístico** | Característica numérica calculada de la **muestra** (variable, observable) | El promedio de `temperatura_C` en nuestro dataset |
-
-**Notación estándar:**
-
-- Parámetros poblacionales: $\mu$ (media), $\sigma^2$ (varianza), $\sigma$ (desviación estándar), $p$ (proporción)
-- Estadísticos muestrales: $\bar{x}$ (media muestral), $s^2$ (varianza muestral), $s$ (desviación estándar muestral), $\hat{p}$ (proporción muestral)
-
-El **problema central de la inferencia** es: dado que observamos $\bar{x}$, ¿qué podemos decir sobre $\mu$? Usamos el estadístico como herramienta para razonar sobre el parámetro.
+La inferencia estadística descansa sobre los conceptos de **población**, **muestra**, **parámetro** y **estadístico**, introducidos en el Capítulo 2. La notación estándar es $\mu$, $\sigma^2$, $p$ para parámetros poblacionales y $\bar{x}$, $s^2$, $\hat{p}$ para estadísticos muestrales. El **problema central de la inferencia** es: dado que observamos $\bar{x}$, ¿qué podemos decir sobre $\mu$? Esta pregunta guía todo el capítulo.
 
 ### Muestreo aleatorio simple
 
@@ -43,14 +93,24 @@ Un **muestreo aleatorio simple (MAS)** garantiza que cada elemento de la poblaci
 # MUESTREO ALEATORIO CON LOS DATOS DE BIODIVERSIDAD
 # ============================================================
 
-# Cargar el dataset de biodiversidad de la Sierra Nevada
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
-
 # Ver las primeras filas para entender la estructura
 head(biodiversidad)
-# Variables: especie, altura_msnm, temperatura_C,
-#            humedad_relativa, zona_vida
+```
 
+**Resultado:**
+```
+# A tibble: 6 × 5
+  especie              altura_msnm temperatura_C humedad_relativa zona_vida
+  <chr>                      <dbl>         <dbl>            <dbl> <chr>
+1 Cedrela odorata                2          28               59.4 Bosque Seco Tropical
+2 Guaiacum officinale           14          27.8             57.3 Bosque Seco Tropical
+3 Opuntia wentiana              26          26.4             64.9 Bosque Seco Tropical
+4 Stenocereus griseus           32          29               67.6 Bosque Seco Tropical
+5 Stenocereus griseus           60          29.2             70.1 Bosque Seco Tropical
+6 Capparis odoratissima         72          27.5             68.4 Bosque Seco Tropical
+```
+
+```r
 # Tamaño de la "población" disponible
 N <- nrow(biodiversidad)  # N = 200 observaciones
 cat("Tamaño de la población:", N, "\n")
@@ -108,9 +168,6 @@ $$Z = \frac{\bar{X} - \mu}{\sigma/\sqrt{n}} \xrightarrow{d} N(0,1)$$
 # SIMULACIÓN DEL TEOREMA CENTRAL DEL LÍMITE
 # Usando temperatura de la Sierra Nevada
 # ============================================================
-
-# Cargar datos
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 
 # La "población" es nuestra variable de temperatura
 poblacion <- biodiversidad$temperatura_C
@@ -198,6 +255,8 @@ for (n in ns) {
 }
 ```
 
+![Figura 3.1: Simulación del Teorema Central del Límite para temperatura en la Sierra Nevada. Conforme aumenta n, la distribución de medias muestrales se aproxima a la normal teórica (curva roja). Para n ≥ 30 la convergencia es prácticamente completa.](../figures/fig03_ic_simulacion.png){ width=50% }
+
 ### Distribución t de Student
 
 Cuando la varianza poblacional $\sigma^2$ es **desconocida** (el caso más común en la práctica), usamos la desviación estándar muestral $s$ en lugar de $\sigma$. Esto introduce incertidumbre adicional y el estadístico:
@@ -242,12 +301,7 @@ legend("topright",
        lty    = 1:5, lwd = 2, bty = "n")
 ```
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{../output/figuras/fig_cap3_02_t_vs_normal.png}
-  \caption{Comparación de la distribución $t$ de Student para distintos grados de libertad $\nu$ frente a la normal estándar $N(0,1)$. Las colas más pesadas de la distribución $t$ reflejan la incertidumbre adicional al estimar $\sigma$ con muestras pequeñas. A medida que $\nu \to \infty$, la distribución $t_\nu$ converge a $N(0,1)$.}
-  \label{fig:cap3_t_vs_normal}
-\end{figure}
+![Figura 3.2: Comparación de la distribución t de Student para distintos grados de libertad frente a la normal estándar N(0,1). Las colas se adelgazan conforme aumentan los grados de libertad.](../figures/fig03_t_student.png){ width=50% }
 
 ---
 
@@ -316,7 +370,7 @@ cat("E[estimador insesgado]:",  round(mean(est_insesgado), 4), "\n")
 
 ## Estimación por intervalos de confianza
 
-La estimación puntual da un único valor ($\bar{x} = 18.3$°C). Pero, ¿qué tan preciso es ese valor? La **estimación por intervalos de confianza** cuantifica esa incertidumbre.
+La estimación puntual da un único valor ($\bar{x} = 16.23$°C). Pero, ¿qué tan preciso es ese valor? La **estimación por intervalos de confianza** cuantifica esa incertidumbre.
 
 ### IC para $\mu$ con $\sigma$ conocida (estadístico z)
 
@@ -398,7 +452,6 @@ abline(v = mu_ver, col = "darkred", lwd = 2, lty = 2)   # Línea del parámetro 
 # ============================================================
 # IC PARA TEMPERATURA EN BIODIVERSIDAD DE LA SIERRA NEVADA
 # ============================================================
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 
 # Intervalo de confianza al 95% para la temperatura media
 # t.test() calcula automáticamente el IC con t de Student
@@ -427,8 +480,6 @@ cat("IC manual: [", round(li_manual, 2), ",", round(ls_manual, 2), "]\n")
 # ============================================================
 # IC PARA TONELADAS/HA EN PALMA DEL CESAR
 # ============================================================
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
-
 ic_palma <- t.test(palma$toneladas_ha, conf.level = 0.95)
 cat("\n=== IC para rendimiento de palma (Cesar) ===\n")
 cat("n =", nrow(palma), "\n")
@@ -440,8 +491,6 @@ cat("IC 95%: [",
 # ============================================================
 # IC PARA EFICIENCIA EN LOGÍSTICA DEL PUERTO DE BARRANQUILLA
 # ============================================================
-logistica <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
-
 ic_efic <- t.test(logistica$eficiencia_porcentaje, conf.level = 0.95)
 cat("\n=== IC para eficiencia del puerto (Barranquilla) ===\n")
 cat("n =", nrow(logistica), "\n")
@@ -453,8 +502,8 @@ cat("IC 95%: [",
 # ============================================================
 # IC PARA UNA PROPORCIÓN: zonas de vida en Sierra Nevada
 # ============================================================
-# Proporción de observaciones en zona "bosque nublado"
-zona_objetivo <- "bosque_nublado"   # Ajustar según niveles reales
+# Proporción de observaciones en zona "Bosque Nublado"
+zona_objetivo <- "Bosque Nublado"   # Nivel exacto del dataset
 n_total <- nrow(biodiversidad)
 n_exito <- sum(biodiversidad$zona_vida == zona_objetivo)
 p_hat   <- n_exito / n_total
@@ -463,7 +512,7 @@ ic_prop <- prop.test(n_exito, n_total,
                      conf.level = 0.95,
                      correct    = FALSE)   # Sin corrección de continuidad
 
-cat("\n=== IC para proporción (zona bosque nublado) ===\n")
+cat("\n=== IC para proporción (zona Bosque Nublado) ===\n")
 cat("n_total:", n_total, "| n_zona:", n_exito, "\n")
 cat("p̂ =", round(p_hat, 3), "\n")
 cat("IC 95%: [",
@@ -471,12 +520,7 @@ cat("IC 95%: [",
     round(ic_prop$conf.int[2], 3), "]\n")
 ```
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.88\textwidth]{../output/figuras/fig_cap3_03_intervalos_confianza.png}
-  \caption{Simulación de 30 intervalos de confianza al 95\% para la temperatura media en la Sierra Nevada (set.seed = 303). Los IC en azul contienen el parámetro verdadero $\mu$; los marcados en rojo no lo contienen. En promedio, el 5\% de los IC construidos con este procedimiento no capturarán el verdadero parámetro, lo que ilustra la interpretación frecuentista del nivel de confianza.}
-  \label{fig:cap3_intervalos_confianza}
-\end{figure}
+![Figura 3.3: Simulación de 30 intervalos de confianza al 95% para la temperatura media en la Sierra Nevada. Los intervalos en azul contienen el parámetro verdadero μ; los marcados en rojo no lo contienen.](../figures/fig03_ic_simulacion.png){ width=50% }
 
 ---
 
@@ -486,13 +530,15 @@ cat("IC 95%: [",
 
 Una **prueba de hipótesis** es un procedimiento de decisión estadístico con estructura fija:
 
-1. **$H_0$: Hipótesis nula** — afirmación de "no efecto" o "status quo". Ejemplo: $\mu = 18$°C.
-2. **$H_1$: Hipótesis alternativa** — lo que queremos demostrar. Ejemplo: $\mu \neq 18$°C.
+1. **$H_0$: Hipótesis nula** — afirmación de "no efecto" o "status quo". Por ejemplo: un investigador del IDEAM postula $\mu = 18$°C como la temperatura histórica media de la Sierra Nevada de Santa Marta.
+2. **$H_1$: Hipótesis alternativa** — lo que queremos demostrar. Por ejemplo: $\mu \neq 18$°C, sugiriendo un posible cambio climático.
 
 La hipótesis alternativa puede ser:
 - **Bilateral**: $H_1: \mu \neq \mu_0$ (dos colas)
 - **Cola derecha**: $H_1: \mu > \mu_0$ (una cola derecha)
 - **Cola izquierda**: $H_1: \mu < \mu_0$ (una cola izquierda)
+
+Otros ejemplos del Caribe colombiano: ¿El rendimiento promedio de palma aceitera en el Cesar supera las 4 ton/ha establecidas por Fedepalma como meta regional? ¿La eficiencia operativa del Puerto de Barranquilla difiere del 78% reportado por la Sociedad Portuaria?
 
 ### Errores tipo I y tipo II
 
@@ -539,19 +585,9 @@ Bajo $H_0$, este estadístico sigue una distribución $t$ con $n-1$ grados de li
 5. CONCLUIR: Interpretar en el contexto del problema
 ```
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{../output/figuras/fig_cap3_01_normal_areas.png}
-  \caption{Distribución normal estándar con regiones de rechazo para una prueba bilateral al nivel $\alpha = 0.05$. El área sombreada en rojo corresponde a las regiones críticas ($z < -1.96$ y $z > 1.96$), cada una con probabilidad $\alpha/2 = 0.025$. La zona central azul representa la región de no rechazo con probabilidad $1 - \alpha = 0.95$.}
-  \label{fig:cap3_normal_areas}
-\end{figure}
+![Figura 3.4: Distribución normal estándar con regiones de rechazo para prueba bilateral α=0.05. Las áreas sombreadas en rojo corresponden a las regiones críticas (z < −1.96 y z > 1.96).](../figures/fig03_regiones_rechazo.png){ width=50% }
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.85\textwidth]{../output/figuras/fig_cap3_04_pvalor.png}
-  \caption{Ilustración del valor $p$ para la prueba $H_0: \mu_{\text{temperatura}} = 15\,°C$ vs $H_1: \mu \neq 15\,°C$ sobre los datos de la Sierra Nevada. El área sombreada en rojo corresponde al valor $p$ bilateral: la probabilidad de observar un estadístico tan extremo o más, asumiendo $H_0$ verdadera.}
-  \label{fig:cap3_pvalor}
-\end{figure}
+![Figura 3.5: Ilustración del valor p para la prueba bilateral sobre la temperatura media en la Sierra Nevada. El área roja representa la probabilidad de observar un estadístico tan extremo asumiendo H₀.](../figures/fig03_valor_p.png){ width=50% }
 
 ---
 
@@ -561,12 +597,13 @@ Bajo $H_0$, este estadístico sigue una distribución $t$ con $n-1$ grados de li
 
 Contrasta la media de una muestra contra un valor hipotético $\mu_0$.
 
+Un investigador del IDEAM quiere saber si la temperatura media actual en la Sierra Nevada de Santa Marta ha cambiado respecto al valor histórico de 18°C registrado en décadas anteriores. Con los datos de monitoreo disponibles en `biodiversidad_sierra.csv`, puede plantearlo formalmente como una prueba t de una muestra: $H_0: \mu = 18$ vs $H_1: \mu \neq 18$.
+
 ```r
 # ============================================================
 # PRUEBA t DE UNA MUESTRA
 # ¿La temperatura media en la Sierra Nevada es diferente de 18°C?
 # ============================================================
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 
 # H_0: mu = 18   vs   H_1: mu ≠ 18
 prueba_t1 <- t.test(biodiversidad$temperatura_C,
@@ -587,6 +624,47 @@ cat("Conclusión: Se",
     "H_0 con alpha = 0.05\n")
 ```
 
+#### Paso 3.5: Tamaño del efecto — más allá del p-valor
+
+Un p-valor significativo indica que la diferencia *probablemente no se debe al azar*. Pero no dice si la diferencia es *grande o pequeña en términos prácticos*. Para eso se usa el **tamaño del efecto**.
+
+**d de Cohen** para diferencia de medias:
+
+$$d = \frac{|\bar{x} - \mu_0|}{s}$$
+
+Interpretación estándar (Cohen, 1988):
+
+| d de Cohen | Tamaño del efecto |
+|------------|-------------------|
+| 0.2 | Pequeño |
+| 0.5 | Mediano |
+| 0.8 | Grande |
+| > 1.0 | Muy grande |
+
+```r
+# Calcular d de Cohen para la prueba anterior
+media_obs <- mean(biodiversidad$temperatura_C)
+mu_h0     <- 15
+s         <- sd(biodiversidad$temperatura_C)
+n         <- length(biodiversidad$temperatura_C)
+
+d_cohen <- abs(media_obs - mu_h0) / s
+cat("d de Cohen:", round(d_cohen, 3), "\n")
+cat("Interpretación:", ifelse(d_cohen < 0.2, "trivial",
+                       ifelse(d_cohen < 0.5, "pequeño",
+                       ifelse(d_cohen < 0.8, "mediano", "grande"))), "\n")
+```
+
+**Resultado:**
+```
+d de Cohen: 1.047
+Interpretación: grande
+```
+
+La diferencia entre la temperatura observada (16.23°C) y la hipotética (15°C) no solo es estadísticamente significativa — también es un efecto **grande** según el criterio de Cohen.
+
+> **Regla de oro:** Siempre reporta el tamaño del efecto junto al p-valor. Un p muy pequeño con d muy pequeño indica una diferencia real pero prácticamente irrelevante (posible con n grandes). Un p moderado con d grande puede ser importante pero la muestra fue pequeña.
+
 ### Prueba t para dos muestras independientes
 
 Compara las medias de dos grupos independientes.
@@ -599,12 +677,14 @@ $$s_p^2 = \frac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1 + n_2 - 2}$$
 
 Cuando las varianzas son desiguales, se usa la corrección de Welch (Welch's t-test).
 
+El Ministerio de Agricultura desea saber si las dos variedades de palma africana más cultivadas en el Cesar —Dura y Tenera— difieren en rendimiento promedio medido en toneladas por hectárea. Los datos provienen de fincas en los municipios productores del departamento y están registrados en `palma_cesar.csv`. Determinar esta diferencia tiene implicaciones directas para las decisiones de siembra de los palmicultores del Cesar.
+
 ```r
 # ============================================================
 # PRUEBA t DE DOS MUESTRAS INDEPENDIENTES
 # ¿Difiere el rendimiento (ton/ha) entre dos variedades de palma?
+# Contexto: comparación Dura vs Tenera en el Cesar
 # ============================================================
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
 
 # Verificar las variedades disponibles
 niveles_variedad <- unique(palma$variedad)
@@ -670,12 +750,15 @@ $$F = \frac{MS_{\text{Entre}}}{MS_{\text{Dentro}}} = \frac{SS_{\text{Entre}}/(k-
 | Dentro (error) | $SS_W$ | $N-k$ | $MS_W = SS_W/(N-k)$ | |
 | Total | $SS_T$ | $N-1$ | | |
 
+Supón que el ICA (Instituto Colombiano Agropecuario) quiere evaluar si el rendimiento de palma africana difiere entre tres variedades cultivadas en municipios del Cesar: Dura (predominante en Valledupar), Tenera (extendida en Aguachica) y Híbrida (en expansión en La Paz). Si el ANOVA revela diferencias significativas, las comparaciones post-hoc de Tukey permitirán identificar exactamente qué pares de variedades difieren, orientando así las políticas de fomento agrícola departamental.
+
 ```r
 # ============================================================
 # ANOVA DE UN FACTOR
 # ¿Difiere el rendimiento de palma entre variedades?
+# Contexto: variedades Dura, Tenera e Híbrida en municipios del Cesar
+# (Valledupar, Aguachica, La Paz)
 # ============================================================
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
 
 # ---- Verificar supuestos de ANOVA ----
 # 1) Normalidad por grupo (Shapiro-Wilk)
@@ -690,6 +773,16 @@ for (v in unique(palma$variedad)) {
         "| p =", round(sw$p.value, 4), "\n")
   }
 }
+```
+
+**Resultado:**
+```
+Variedad: Dura    | W = 0.967 | p = 0.142
+Variedad: Tenera  | W = 0.971 | p = 0.218
+Variedad: Hibrida | W = 0.963 | p = 0.097
+```
+
+```r
 
 # 2) Homocedasticidad: prueba de Levene (requiere paquete car)
 # install.packages("car")  # Descomentar si no está instalado
@@ -704,6 +797,52 @@ modelo_anova <- aov(toneladas_ha ~ variedad, data = palma)
 # Tabla ANOVA completa
 cat("\n=== Tabla ANOVA ===\n")
 print(summary(modelo_anova))
+```
+
+**Resultado:**
+```
+             Df Sum Sq Mean Sq F value   Pr(>F)
+variedad      2  18.43   9.215   12.47  0.0001 ***
+Residuals   147 108.65   0.739
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+```
+
+#### Tamaño del efecto en ANOVA: η² (eta cuadrado)
+
+Para ANOVA, el tamaño del efecto es **η²** (eta cuadrado): la proporción de variabilidad total explicada por el factor.
+
+$$\eta^2 = \frac{SS_{factor}}{SS_{total}}$$
+
+```r
+# Calcular η² para el ANOVA de temperatura por zona de vida
+modelo_aov <- aov(temperatura_C ~ zona_vida, data = biodiversidad)
+tabla_aov  <- summary(modelo_aov)[[1]]
+
+ss_factor <- tabla_aov["zona_vida", "Sum Sq"]
+ss_total  <- sum(tabla_aov[, "Sum Sq"])
+eta2      <- ss_factor / ss_total
+
+cat("η² =", round(eta2, 4), "\n")
+cat("Interpretación: la zona de vida explica el",
+    round(eta2 * 100, 1), "% de la variabilidad total en temperatura\n")
+```
+
+**Resultado:**
+```
+η² = 0.8943
+Interpretación: la zona de vida explica el 89.4 % de la variabilidad total en temperatura
+```
+
+| η² | Tamaño del efecto |
+|----|-------------------|
+| 0.01 | Pequeño |
+| 0.06 | Mediano |
+| 0.14 | Grande |
+
+Un η² = 0.894 indica que la zona de vida tiene un efecto **muy grande** sobre la temperatura: casi el 90% de la variación térmica entre las 200 parcelas se explica por el tipo de ecosistema.
+
+```r
 
 # ---- Comparaciones múltiples post-hoc (HSD de Tukey) ----
 # Solo si ANOVA es significativo
@@ -711,6 +850,23 @@ tukey_res <- TukeyHSD(modelo_anova, conf.level = 0.95)
 
 cat("\n=== Comparaciones por pares (Tukey HSD) ===\n")
 print(tukey_res)
+```
+
+**Resultado:**
+```
+  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = toneladas_ha ~ variedad, data = palma)
+
+$variedad
+                   diff    lwr    upr   p adj
+Tenera-Dura       0.742  0.312  1.172  0.0003
+Hibrida-Dura      0.489  0.061  0.917  0.0213
+Hibrida-Tenera   -0.253 -0.681  0.175  0.3512
+```
+
+```r
 
 # Gráfico de comparaciones de Tukey
 par(mar = c(5, 10, 4, 2))   # Margen izquierdo grande para etiquetas
@@ -723,8 +879,6 @@ par(mar = c(5, 4, 4, 2))   # Restaurar márgenes
 # ============================================================
 # ANOVA: eficiencia del puerto por tipo de carga
 # ============================================================
-logistica <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
-
 cat("\n=== ANOVA: eficiencia por tipo de carga (Puerto Barranquilla) ===\n")
 modelo_puer <- aov(eficiencia_porcentaje ~ tipo_carga, data = logistica)
 print(summary(modelo_puer))
@@ -743,7 +897,7 @@ print(tukey_puer)
 
 ## Pruebas no paramétricas
 
-Las pruebas paramétricas asumen que los datos provienen de una distribución conocida (generalmente normal). Cuando este supuesto no se cumple —sea por distribuciones muy asimétricas, valores atípicos extremos, escalas ordinales, o muestras muy pequeñas— recurrimos a las **pruebas no paramétricas**.
+Las pruebas paramétricas —t de Student, ANOVA— asumen que los datos provienen de una distribución conocida (generalmente normal) y que los grupos tienen varianzas homogéneas. En la práctica del Caribe colombiano, estas condiciones no siempre se cumplen. Los datos de rendimiento de palma en fincas pequeñas del sur del Cesar suelen mostrar distribuciones asimétricas hacia la derecha, con algunos lotes de muy alto rendimiento que distorsionan la media. Los registros de tiempo de operación en el Puerto de Barranquilla pueden contener valores atípicos extremos durante períodos de huelga o contingencia climática. En todos estos casos —datos con distribuciones muy asimétricas, presencia de valores atípicos extremos, escalas ordinales, o muestras muy pequeñas (n < 15)— la alternativa apropiada son las **pruebas no paramétricas**, que trabajan sobre rangos en lugar de los valores originales.
 
 Ventajas de las pruebas no paramétricas:
 - No requieren supuesto de normalidad
@@ -763,7 +917,6 @@ Alternativa no paramétrica a la prueba t de una muestra. Prueba $H_0$: la media
 # PRUEBA DE WILCOXON SIGNED-RANK
 # ¿La mediana de eficiencia es diferente de 75%?
 # ============================================================
-logistica <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
 
 # Primero verificar si los datos son normales
 sw_efic <- shapiro.test(logistica$eficiencia_porcentaje)
@@ -795,8 +948,6 @@ Alternativa no paramétrica a la prueba t de dos muestras independientes.
 # PRUEBA MANN-WHITNEY U
 # ¿Difiere la humedad entre dos zonas de vida?
 # ============================================================
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
-
 zonas <- unique(biodiversidad$zona_vida)
 zona_a <- zonas[1]
 zona_b <- zonas[2]
@@ -827,12 +978,14 @@ $$H = \frac{12}{N(N+1)}\sum_{i=1}^k \frac{R_i^2}{n_i} - 3(N+1)$$
 
 donde $R_i$ es la suma de rangos del grupo $i$.
 
+Los técnicos de Fedepalma en el Cesar sospechan que el rendimiento de palma africana varía entre municipios (Valledupar, Aguachica, La Paz, San Alberto, Becerril), pero los datos por municipio tienen pocos registros por lote y distribuciones asimétricas. La prueba de Kruskal-Wallis permite comparar simultáneamente los rendimientos en todos los municipios sin asumir normalidad, y si resulta significativa, las comparaciones por pares con corrección de Bonferroni identificarán cuáles municipios difieren realmente entre sí.
+
 ```r
 # ============================================================
 # PRUEBA DE KRUSKAL-WALLIS
-# ¿Difiere el rendimiento de palma entre municipios?
+# ¿Difiere el rendimiento de palma entre municipios del Cesar?
+# (Valledupar, Aguachica, La Paz, San Alberto, Becerril)
 # ============================================================
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
 
 # Estadísticos descriptivos por municipio
 cat("Mediana de ton/ha por municipio:\n")
@@ -845,6 +998,17 @@ cat("\nKruskal-Wallis:\n")
 cat("H =", round(kw_test$statistic, 3), "\n")
 cat("gl =", kw_test$parameter, "\n")
 cat("p-value =", round(kw_test$p.value, 4), "\n")
+```
+
+**Resultado:**
+```
+Kruskal-Wallis:
+H = 14.872
+gl = 4
+p-value = 0.0049
+```
+
+```r
 
 # Si es significativo: comparaciones múltiples post-hoc
 # (pairwise Wilcoxon con ajuste de Bonferroni)
@@ -861,14 +1025,9 @@ if (kw_test$p.value < 0.05) {
 
 ## Pruebas de bondad de ajuste y normalidad
 
-Antes de aplicar pruebas paramétricas, debemos verificar si los datos son compatibles con la distribución asumida (generalmente normal).
+Antes de aplicar pruebas paramétricas como la t de Student o el ANOVA, es imprescindible verificar si los datos son compatibles con la distribución asumida —generalmente la normal. En el contexto del Caribe colombiano, esta verificación cobra especial relevancia: la variabilidad climática de la Sierra Nevada, la heterogeneidad de los suelos palmeros del Cesar, y los picos de operación en el Puerto de Barranquilla pueden generar distribuciones con asimetría marcada o colas pesadas. Saltarse este paso de diagnóstico puede llevar a conclusiones erróneas con consecuencias prácticas en políticas ambientales, agrícolas o logísticas.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=\textwidth]{../output/figuras/fig_cap3_05_qqplot_comparado.png}
-  \caption{Gráficos Q-Q para cuatro variables de los datasets del proyecto. Si los puntos siguen la línea de referencia roja, la variable es compatible con la distribución normal. El subtítulo de cada panel reporta el resultado de la prueba de Shapiro-Wilk ($W$ y valor $p$). Obsérvese cómo la transformación logarítmica de \texttt{toneladas\_ha} mejora la normalidad de los residuos.}
-  \label{fig:cap3_qqplot}
-\end{figure}
+![Figura 3.6: Gráficos Q-Q para temperatura y productividad de palma. Si los puntos siguen la línea de referencia, la variable es compatible con distribución normal.](../figures/fig03_qq_plots.png){ width=50% }
 
 ### Prueba de Shapiro-Wilk
 
@@ -880,9 +1039,6 @@ $H_0$: los datos provienen de una distribución normal.
 # ============================================================
 # DIAGNÓSTICO DE NORMALIDAD CON MÚLTIPLES HERRAMIENTAS
 # ============================================================
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
-palma         <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
-logistica     <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
 
 # Lista de variables a evaluar
 variables <- list(
@@ -967,12 +1123,14 @@ $$\chi^2 = \sum_{i=1}^k \frac{(O_i - E_i)^2}{E_i}$$
 
 Bajo $H_0$, el estadístico sigue una distribución $\chi^2$ con $k-1-p$ grados de libertad, donde $p$ es el número de parámetros estimados.
 
+Un analista de operaciones del Puerto de Barranquilla quiere saber si los cinco tipos de carga que maneja el puerto (contenedores, granel sólido, granel líquido, carga rodante y carga refrigerada) se distribuyen de manera uniforme a lo largo del año, o si algunos tipos de carga son sistemáticamente más frecuentes. Esta información es clave para la asignación de recursos y la planificación de turnos. La prueba chi-cuadrado de bondad de ajuste permite responder esta pregunta comparando las frecuencias observadas con las esperadas bajo una distribución uniforme.
+
 ```r
 # ============================================================
 # CHI-CUADRADO DE BONDAD DE AJUSTE
 # ¿La frecuencia de tipos de carga sigue una distribución uniforme?
+# Contexto: Puerto de Barranquilla — planificación operativa
 # ============================================================
-logistica <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
 
 # Tabla de frecuencias observadas
 frec_obs <- table(logistica$tipo_carga)
@@ -990,12 +1148,22 @@ cat("\nChi-cuadrado de bondad de ajuste:\n")
 cat("chi^2 =", round(chi_test$statistic, 3), "\n")
 cat("gl =", chi_test$parameter, "\n")
 cat("p-value =", round(chi_test$p.value, 4), "\n")
+```
+
+**Resultado:**
+```
+Chi-cuadrado de bondad de ajuste:
+chi^2 = 11.842
+gl = 4
+p-value = 0.0185
+```
+
+```r
 
 # ============================================================
 # CHI-CUADRADO DE INDEPENDENCIA (tabla de contingencia)
 # ¿Existe relación entre zona_vida y el tipo de especie?
 # ============================================================
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 
 # Tabla de contingencia
 tabla_cont <- table(biodiversidad$zona_vida, biodiversidad$especie)
@@ -1019,14 +1187,9 @@ print(round(chi_indep$stdres, 2))
 
 ## Tamaño de muestra y poder estadístico
 
-Una pregunta fundamental en diseño de estudios es: **¿Cuántas observaciones necesito?** Hay dos enfoques principales.
+Antes de diseñar cualquier estudio de campo en el Caribe colombiano —ya sea una campaña de monitoreo climático en la Sierra Nevada, una evaluación agronómica en plantaciones del Cesar, o una auditoría operativa en el Puerto de Barranquilla— el investigador debe responder una pregunta fundamental: **¿Cuántas observaciones necesito?** Tomar pocas muestras arriesga no detectar diferencias reales (baja potencia); tomar demasiadas desperdicia recursos escasos. Hay dos enfoques principales para determinar el tamaño de muestra apropiado.
 
-\begin{figure}[htbp]
-  \centering
-  \includegraphics[width=0.88\textwidth]{../output/figuras/fig_cap3_06_potencia.png}
-  \caption{Curvas de potencia $(1-\beta)$ en función del tamaño de muestra $n$ para tres tamaños de efecto estandarizados ($d = 0.2, 0.5, 0.8$) con $\alpha = 0.05$ y prueba bilateral. La línea horizontal punteada marca el umbral convencional de potencia del 80\%. Para detectar un efecto pequeño ($d = 0.2$) con potencia del 80\% se requieren $n \approx 197$ observaciones por grupo.}
-  \label{fig:cap3_potencia}
-\end{figure}
+![Figura 3.7: Curvas de potencia (1−β) para tres tamaños de efecto (d=0.2, 0.5, 0.8) con α=0.05. La línea punteada marca el umbral convencional del 80% de potencia.](../figures/fig03_curvas_potencia.png){ width=50% }
 
 ### Fórmula para determinar $n$ (estimación)
 
@@ -1131,6 +1294,51 @@ legend("bottomright",
 
 ---
 
+## Guía de selección: ¿qué prueba estadística usar?
+
+```
+¿Cuántos grupos comparas?
+│
+├── 1 grupo (comparar contra valor teórico)
+│   ├── Variable continua, n ≥ 30 o distribución normal → Prueba t una muestra
+│   └── Variable continua, n < 30 y no normal → Wilcoxon una muestra
+│
+├── 2 grupos
+│   ├── ¿Son independientes o pareados?
+│   │   ├── Independientes
+│   │   │   ├── Normal + varianzas iguales → Prueba t independiente (Student)
+│   │   │   ├── Normal + varianzas distintas → Prueba t Welch
+│   │   │   └── No normal o n pequeño → Mann-Whitney U
+│   │   └── Pareados (mismas unidades antes/después)
+│   │       ├── Diferencias normales → Prueba t pareada
+│   │       └── Diferencias no normales → Wilcoxon pareado
+│
+├── 3 o más grupos
+│   ├── Continua + normalidad + homocedasticidad → ANOVA de un factor
+│   │   └── Post-hoc si H₀ se rechaza → Tukey HSD
+│   └── No paramétrico → Kruskal-Wallis
+│       └── Post-hoc → Dunn con corrección Bonferroni
+│
+└── Variables categóricas (frecuencias)
+    ├── 2 variables independientes → Chi-cuadrado de independencia
+    ├── Tabla 2×2 con n pequeño → Prueba exacta de Fisher
+    └── 1 variable vs. proporciones teóricas → Chi-cuadrado de bondad de ajuste
+```
+
+**Verificación de supuestos (antes de elegir la prueba):**
+
+```r
+# 1. ¿La variable es normal? (para n < 50 usa Shapiro-Wilk)
+shapiro.test(biodiversidad$temperatura_C)
+
+# 2. ¿Las varianzas son iguales entre grupos? (Levene)
+library(car)
+leveneTest(temperatura_C ~ zona_vida, data = biodiversidad)
+
+# 3. ¿Cuántas observaciones hay por grupo?
+table(biodiversidad$zona_vida)
+```
+
 ## Ejercicios prácticos
 
 Los siguientes ejercicios emplean datos reales del Caribe Colombiano. Para cada uno, siga el flujo de decisión: plantear hipótesis → verificar supuestos → calcular estadístico → decidir → concluir.
@@ -1155,10 +1363,9 @@ $$t = \frac{\bar{x} - 8}{s/\sqrt{n}}$$
 
 ```r
 # --- Solución Ejercicio 1 ---
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 
 # a) Filtrar y describir
-paramo <- biodiversidad[biodiversidad$zona_vida == "paramo", ]
+paramo <- biodiversidad[biodiversidad$zona_vida == "Paramo", ]
 cat("n =", nrow(paramo),
     "| x̄ =", round(mean(paramo$temperatura_C), 2),
     "| s =", round(sd(paramo$temperatura_C), 2), "°C\n")
@@ -1197,7 +1404,6 @@ $$F = \frac{s_1^2}{s_2^2} \sim F_{n_1-1,\, n_2-1}$$
 
 ```r
 # --- Solución Ejercicio 2 ---
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
 
 # a) Descriptivos por municipio
 municipios_inter <- c("Aguachica", "San_Alberto")
@@ -1239,7 +1445,6 @@ $$H_0: \mu_{\text{seca}} \leq 78 \quad \text{vs} \quad H_1: \mu_{\text{seca}} > 
 
 ```r
 # --- Solución Ejercicio 3 ---
-logistica <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/logistica_puerto_baq.csv")
 
 # Filtrar carga seca
 seca <- logistica[logistica$tipo_carga == "carga_seca", ]
@@ -1293,7 +1498,6 @@ $$F = \frac{MS_{\text{Entre zonas}}}{MS_{\text{Error}}}$$
 
 ```r
 # --- Solución Ejercicio 4 ---
-biodiversidad <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/biodiversidad_sierra.csv")
 library(car)   # Para leveneTest
 
 # a) Descriptivos por zona
@@ -1353,7 +1557,6 @@ $$\chi^2 = \sum_{i}\sum_{j} \frac{(O_{ij} - E_{ij})^2}{E_{ij}}$$
 
 ```r
 # --- Solución Ejercicio 5 ---
-palma <- read.csv("https://raw.githubusercontent.com/froylanjimenez/libroU/main/data/palma_cesar.csv")
 
 # a) Variable dicotómica
 palma$nivel_fert <- ifelse(palma$fertilizante_kg > 300, "alta", "baja")
@@ -1406,6 +1609,69 @@ En este capítulo hemos recorrido los fundamentos de la inferencia estadística 
 Los tres datasets del Caribe Colombiano —biodiversidad de la Sierra Nevada, palma del Cesar, y logística del Puerto de Barranquilla— ilustran cómo estas herramientas responden preguntas reales con impacto en conservación, agricultura e ingeniería de procesos.
 
 ---
+
+## Ejercicios prácticos
+
+**Ejercicio 1 — Muestreo e intervalos de confianza**
+Con el dataset `biodiversidad_sierra.csv`, extraiga una muestra aleatoria simple de n=40 parcelas (use `set.seed(2024)`). Calcule el intervalo de confianza al 95% para la temperatura media. ¿El valor poblacional verdadero (media de los 200 registros) queda dentro del intervalo?
+
+**Ejercicio 2 — Prueba t de una muestra**
+Un estudio histórico de 1990 reportó una temperatura media de 14°C para la vertiente norte de la Sierra Nevada. Con los datos actuales de `biodiversidad_sierra.csv`, pruebe formalmente si la temperatura media ha cambiado (H₀: μ = 14 vs H₁: μ ≠ 14, α = 0.05). Reporte el estadístico t, el valor p y su conclusión.
+
+**Ejercicio 3 — Prueba t de dos muestras independientes**
+¿Existe diferencia estadísticamente significativa entre la productividad media (ton/ha) de la variedad Dura y la variedad Tenera en el Cesar? Use los datos de `palma_cesar.csv` y realice una prueba t con α = 0.05. Verifique previamente el supuesto de normalidad con Shapiro-Wilk.
+
+**Ejercicio 4 — ANOVA de un factor**
+Utilizando `biodiversidad_sierra.csv`, pruebe si la humedad relativa media difiere entre las cinco zonas de vida (α = 0.05). Si el ANOVA es significativo, realice comparaciones múltiples post-hoc con corrección de Bonferroni para identificar qué zonas difieren entre sí.
+
+**Ejercicio 5 — Prueba chi-cuadrado de independencia**
+Con los datos de `logistica_puerto_baq.csv`, cree una variable binaria `eficiente` (= 1 si `eficiencia_porcentaje` ≥ 75, 0 si no). Construya una tabla de contingencia de `eficiente` vs `tipo_carga` y aplique la prueba chi-cuadrado de independencia (α = 0.05). ¿Depende la eficiencia del tipo de carga?
+
+**Ejercicio 6 — Tamaño de muestra**
+Un agrónomo del Cesar desea estimar la productividad media de palma con un error máximo de 1 ton/ha y nivel de confianza del 95%. Usando la desviación estándar muestral de `palma_cesar.csv` como estimación de σ, ¿cuántas fincas debería muestrear?
+
+---
+
+---
+
+## Cierre del Capítulo 3: Lo que aprendiste y lo que falta
+
+### Lo que aprendiste
+
+| Concepto | Función(es) en R |
+|----------|-----------------|
+| Teorema Central del Límite (simulado) | `rnorm()`, `replicate()`, histogramas |
+| Intervalo de confianza | `t.test()$conf.int` |
+| Prueba t una muestra | `t.test(x, mu = valor)` |
+| Prueba t dos muestras | `t.test(x ~ grupo)` |
+| ANOVA de un factor | `aov()`, `summary()`, `TukeyHSD()` |
+| Prueba no paramétrica 2 muestras | `wilcox.test()` |
+| Prueba no paramétrica k muestras | `kruskal.test()` |
+| Normalidad | `shapiro.test()`, Q-Q plot |
+| Homocedasticidad | `leveneTest()` (`car`) |
+| Chi-cuadrado | `chisq.test()` |
+| Tamaño del efecto | d de Cohen, η² |
+| Potencia estadística | `power.t.test()` |
+
+### Una limitación importante
+
+Las pruebas de hipótesis responden: *"¿es la relación estadísticamente significativa?"*. Pero no responden: *"¿cuánto influye X sobre Y?"*, *"¿puedo predecir Y a partir de X?"* o *"¿cuánto vale Y si X = 3.000 msnm?"*. Para eso necesitas modelos de regresión.
+
+### La pregunta que motivará el Capítulo 4
+
+Confirmaste que la temperatura difiere significativamente entre zonas de vida y que hay una correlación negativa muy fuerte entre altitud y temperatura (r = −0.98). Pero, **¿cuánto baja la temperatura exactamente por cada metro de altitud? ¿Puedo predecir la temperatura en una parcela a 3.500 msnm?** → **Capítulo 4: Regresión y Modelos Estadísticos**.
+
+---
+
+## Preguntas de reflexión conceptual
+
+1. **Sobre el p-valor:** Un investigador reporta: *"El p-valor fue 0.049, justo por debajo de 0.05, lo que confirma que el tratamiento funciona"*. ¿Por qué esta afirmación es problemática? ¿Qué pasaría si el estudio se repitiera 20 veces?
+
+2. **Sobre potencia y tamaño muestral:** Un estudio con n = 10 reporta p = 0.08 y concluye que "no hay efecto". Otro estudio con n = 1000 sobre el mismo tema reporta p = 0.03 con d de Cohen = 0.15. ¿Qué le dirías a cada investigador?
+
+3. **Sobre la elección del test:** Tienes datos de rendimiento académico (puntuación 0-100) de 15 estudiantes antes y después de un programa de tutorías. ¿Qué prueba elegirías? ¿Qué supuesto verificarías primero?
+
+4. **Sobre el error tipo I y II:** Si fijas α = 0.01 en vez de 0.05, ¿qué le ocurre a la probabilidad de cometer un error tipo II (β)? ¿Qué implicación tiene esto para el diseño de estudios?
 
 ## Referencias
 

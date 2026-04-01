@@ -38,6 +38,8 @@
 
 % --- Gráficos y figuras ------------------------------------------------------
 \usepackage{graphicx}         % Inclusión de imágenes
+% Protección global: proporciones conservadas; el ancho individual se fija en markdown (50% \linewidth)
+\setkeys{Gin}{keepaspectratio=true}
 \usepackage{float}            % Control de posición [H]
 \usepackage{subcaption}       % Subfiguras
 \graphicspath{{../output/}{./figuras/}}
